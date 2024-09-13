@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChilloutVR Join</title>
+    <style>
+        /* Base styles */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        h1 {
+            margin: 0;
+            padding: 20px;
+            font-size: 2em;
+        }
+        p {
+            margin: 0;
+        }
+        .small-text {
+            font-size: 0.9em;
+            color: #007bff;
+            margin-top: 10px;
+        }
+        a {
+            text-decoration: none;
+            color: inherit;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1em;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 80%;
+            max-width: 400px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        label {
+            display: block;
+            margin: 10px 0;
+            font-size: 0.9em;
+        }
+
+        /* Light mode styles */
+        @media (prefers-color-scheme: light) {
+            body {
+                background-color: #f0f0f0;
+                color: #333;
+            }
+            input[type="text"] {
+                background-color: #fff;
+                color: #000;
+                border: 1px solid #ccc;
+            }
+            button {
+                background-color: #007bff;
+                color: #fff;
+            }
+        }
+
+        /* Dark mode styles */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #121212;
+                color: #e0e0e0;
+            }
+            input[type="text"] {
+                background-color: #333;
+                color: #e0e0e0;
+                border: 1px solid #555;
+            }
+            button {
+                background-color: #1e88e5;
+                color: #fff;
+            }
+            button:hover {
+                background-color: #1565c0;
+            }
+        }
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check if the URL has the "join" parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            const joinParam = urlParams.get('join');
+            
+            if (joinParam) {
+                // Create the joinLink
+                const joinLink = `chilloutvr://instance/join?instanceId=i+${joinParam}&startInVR=false`;
+                
+                // Open the joinLink
+                window.location.href = joinLink;
+            }
+        });
+
+        function createLink() {
+            // Get the input value
+            const inputBox = document.getElementById("inputBox");
+            const inputText = inputBox.value.trim();
+            const enableDecoding = document.getElementById("enableDecoding").checked;
+            
+            let output;
+
+            if (inputText.startsWith("chilloutvr://")) {
+				let url = inputText;
+				if (enableDecoding) // this was added by a human because sometimes the machine is dumb
+				{
+					const decodedUrl = decodeURIComponent(inputText);
+                    url = new URL(decodedUrl);
+				}
+                try {
+                    const instanceId = url.searchParams.get('instanceId');
+                    
+                    if (instanceId) {
+                        // Remove the first two characters
+                        output = instanceId.substring(2);
+                    } else {
+                        output = "No instanceId found";
+                    }
+                } catch (e) {
+                    console.error('Invalid URL format: ', e);
+                    output = "Error processing URL";
+                }
+            } else {
+                // Directly use the inputText if not a cvr protocol link or decoding is disabled
+                output = inputText;
+            }
+
+            // Get the current page URL without parameters
+            const currentPageUrl = window.location.origin + window.location.pathname + "?join=";
+            
+            // Prepend the current page URL to the output
+            const finalOutput = currentPageUrl + output;
+            
+			// Catch error and inform the user that there was one! Return Early to prevent bad data being copied!
+			if (output === ("Error processing URL" || "No instanceId found"))
+				{
+					let extraErrorInfo = "";
+					if (!enableDecoding){
+						extraErrorInfo = " // Try Enabling URI Decoding!"
+					}
+					alert(output + extraErrorInfo);
+					return;
+				}
+			
+            // Copy the finalOutput to clipboard
+            navigator.clipboard.writeText(finalOutput).then(() => {
+                // Show a dialog box
+                alert("Link Created and Copied");
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>ChilloutVR Join</h1>
+    <p>Create and copy your ChilloutVR instance link:</p>
+    <input type="text" id="inputBox" placeholder="Enter InstanceID or chilloutvr://instance/join link here">
+    <label title="If you don't know what this does, leave it alone">
+        <input type="checkbox" id="enableDecoding" checked>
+        Enable URI Decoding
+    </label>
+    <button onclick="createLink()">Create Link</button>
+    <p class="small-text"><a href="https://github.com/VoyVivika/cvrjoin" target="_blank" rel="noopener noreferrer">Code on GitHub</a></p>
+</body>
+</html>
