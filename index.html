@@ -141,6 +141,13 @@
             } else {
                 // Directly use the inputText if not a cvr protocol link or decoding is disabled
                 output = inputText;
+				
+				// ok so CVR added the ability to copy instance IDs in-game, but it copies the i+ part, so I need to check for that.
+				if (inputText.startsWith("i+"))
+				{
+					output = inputText.substring(2);
+				}
+				
             }
 
             // Get the current page URL without parameters
